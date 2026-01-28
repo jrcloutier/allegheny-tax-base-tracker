@@ -65,28 +65,53 @@
 						display: false
 					},
 					tooltip: {
+						titleFont: {
+							family: "'Noto Sans Display', sans-serif"
+						},
+						bodyFont: {
+							family: "'Noto Sans Mono', monospace"
+						},
 						callbacks: {
 							label: (ctx) => `Change: ${formatCurrency(ctx.parsed.y)}`
 						}
 					},
 					title: {
 						display: true,
-						text: 'Year-to-Date Change in Total County Taxable Value'
+						text: 'Year-to-Date Change in Total County Taxable Value',
+						font: {
+							family: "'Noto Sans Display', sans-serif",
+							size: 14,
+							weight: '600'
+						}
 					}
 				},
 				scales: {
 					x: {
 						title: {
 							display: true,
-							text: 'Week'
+							text: 'Week',
+							font: {
+								family: "'Noto Sans Display', sans-serif"
+							}
+						},
+						ticks: {
+							font: {
+								family: "'Noto Sans Mono', monospace"
+							}
 						}
 					},
 					y: {
 						title: {
 							display: true,
-							text: 'YTD Change ($)'
+							text: 'YTD Change ($)',
+							font: {
+								family: "'Noto Sans Display', sans-serif"
+							}
 						},
 						ticks: {
+							font: {
+								family: "'Noto Sans Mono', monospace"
+							},
 							callback: (value) => {
 								const num = Number(value);
 								if (Math.abs(num) >= 1000000) {

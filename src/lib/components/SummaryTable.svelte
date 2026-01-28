@@ -100,6 +100,7 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-size: 0.9rem;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	th, td {
@@ -113,6 +114,7 @@
 		font-weight: 600;
 		position: sticky;
 		top: 0;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	th.sortable {
@@ -126,7 +128,7 @@
 
 	.numeric {
 		text-align: right;
-		font-family: monospace;
+		font-family: 'Noto Sans Mono', monospace;
 	}
 
 	tr:hover {

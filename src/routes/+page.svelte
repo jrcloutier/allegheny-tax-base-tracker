@@ -70,7 +70,7 @@
 <style>
 	:global(body) {
 		margin: 0;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+		font-family: 'Noto Sans Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		line-height: 1.6;
 		color: #333;
 	}
@@ -89,22 +89,27 @@
 	h1 {
 		margin: 0 0 0.5rem;
 		color: #1a1a1a;
+		font-family: 'Noto Serif', Georgia, serif;
+		font-weight: 700;
 	}
 
 	.subtitle {
 		color: #666;
 		margin: 0;
+		font-family: 'Noto Sans', sans-serif;
 	}
 
 	h2 {
 		margin: 0 0 0.5rem;
 		font-size: 1.25rem;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	.help-text {
 		color: #666;
 		font-size: 0.9rem;
 		margin: 0 0 1rem;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	section {
@@ -115,6 +120,7 @@
 		text-align: center;
 		padding: 3rem;
 		font-size: 1.1rem;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	.error {
@@ -130,6 +136,7 @@
 		text-align: center;
 		font-size: 0.85rem;
 		color: #666;
+		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	footer a {
