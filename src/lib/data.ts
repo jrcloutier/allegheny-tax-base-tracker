@@ -106,13 +106,11 @@ export function getAggregateChartData(data: MuniRecord[]): { weeks: string[]; va
 			.reduce((sum, d) => sum + d.taxable_value, 0);
 	}
 
-	// Calculate YTD percent change for each week
+	// Calculate YTD absolute change for each week
 	const values = weeks.map(week => {
 		const weekData = data.filter(d => d.scrape_week === week);
 		const weekTotal = weekData.reduce((sum, d) => sum + d.taxable_value, 0);
-
-		if (startOfYearTotal === 0) return 0;
-		return ((weekTotal - startOfYearTotal) / startOfYearTotal) * 100;
+		return weekTotal - startOfYearTotal;
 	});
 
 	return { weeks, values };

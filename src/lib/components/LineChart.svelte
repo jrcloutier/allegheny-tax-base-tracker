@@ -14,10 +14,25 @@
 	let canvas: HTMLCanvasElement;
 	let chart: Chart | null = null;
 
+	function formatCurrency(value: number): string {
+		const sign = value >= 0 ? '+' : '';
+		return sign + new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: 'USD',
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 0
+		}).format(value);
+	}
+
 	function createChart() {
 		if (!canvas || !data.length) return;
 
 		const { weeks, values } = getAggregateChartData(data);
+
+		// Determine color based on final value
+		const lastValue = values[values.length - 1] || 0;
+		const lineColor = lastValue >= 0 ? '#2e7d32' : '#c62828';
+		const fillColor = lastValue >= 0 ? 'rgba(46, 125, 50, 0.1)' : 'rgba(198, 40, 40, 0.1)';
 
 		if (chart) {
 			chart.destroy();
@@ -30,8 +45,8 @@
 				datasets: [{
 					label: 'Allegheny County Total',
 					data: values,
-					borderColor: '#1976d2',
-					backgroundColor: 'rgba(25, 118, 210, 0.1)',
+					borderColor: lineColor,
+					backgroundColor: fillColor,
 					tension: 0.1,
 					pointRadius: 4,
 					borderWidth: 2,
@@ -51,12 +66,12 @@
 					},
 					tooltip: {
 						callbacks: {
-							label: (ctx) => `Change: ${ctx.parsed.y?.toFixed(4)}%`
+							label: (ctx) => `Change: ${formatCurrency(ctx.parsed.y)}`
 						}
 					},
 					title: {
 						display: true,
-						text: 'Year-to-Date Percent Change in Total County Taxable Value'
+						text: 'Year-to-Date Change in Total County Taxable Value'
 					}
 				},
 				scales: {
@@ -69,10 +84,18 @@
 					y: {
 						title: {
 							display: true,
-							text: 'YTD % Change'
+							text: 'YTD Change ($)'
 						},
 						ticks: {
-							callback: (value) => `${value}%`
+							callback: (value) => {
+								const num = Number(value);
+								if (Math.abs(num) >= 1000000) {
+									return (num / 1000000).toFixed(1) + 'M';
+								} else if (Math.abs(num) >= 1000) {
+									return (num / 1000).toFixed(0) + 'K';
+								}
+								return String(value);
+							}
 						}
 					}
 				}
