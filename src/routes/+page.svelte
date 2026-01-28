@@ -7,14 +7,23 @@
 
 	let data: MuniRecord[] = $state([]);
 	let summaries: MuniSummary[] = $state([]);
+	let dataAsOf: string = $state('');
 	let selectedMunis: string[] = $state([]);
 	let loading: boolean = $state(true);
 	let error: string | null = $state(null);
 
+	function formatDateForDisplay(dateStr: string): string {
+		if (!dateStr) return '';
+		const date = new Date(dateStr + 'T00:00:00');
+		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+	}
+
 	onMount(async () => {
 		try {
 			data = await fetchData();
-			summaries = calculateSummaries(data);
+			const result = calculateSummaries(data);
+			summaries = result.summaries;
+			dataAsOf = result.dataAsOf;
 			loading = false;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load data';
@@ -34,7 +43,7 @@
 <main>
 	<header>
 		<h1>Allegheny County Assessment Dashboard</h1>
-		<p class="subtitle">Tracking changes in municipal taxable property values</p>
+		<p class="subtitle">Real estate values as of {formatDateForDisplay(dataAsOf)}</p>
 	</header>
 
 	{#if loading}
@@ -55,7 +64,7 @@
 		</section>
 
 		<section class="table-section">
-			<h2>Municipality Summary</h2>
+			<h2>Top 10 Municipalities by Change</h2>
 			<p class="help-text">Click a row to add/remove it from the chart. Click column headers to sort.</p>
 			<SummaryTable {summaries} onMuniSelect={handleMuniSelect} {selectedMunis} />
 		</section>

@@ -9,9 +9,9 @@
 
 	let { summaries, onMuniSelect, selectedMunis }: Props = $props();
 
-	type SortKey = 'municipality' | 'startOfYearValue' | 'currentValue' | 'change' | 'pctChange' | 'dataAsOf';
-	let sortKey: SortKey = $state('municipality');
-	let sortAsc: boolean = $state(true);
+	type SortKey = 'municipality' | 'startOfYearValue' | 'currentValue' | 'change' | 'pctChange';
+	let sortKey: SortKey = $state('change');
+	let sortAsc: boolean = $state(false);
 
 	function formatCurrency(value: number): string {
 		return new Intl.NumberFormat('en-US', {
@@ -91,9 +91,6 @@
 				<th class="sortable numeric" onclick={() => handleSort('pctChange')}>
 					% Change {sortKey === 'pctChange' ? (sortAsc ? '▲' : '▼') : ''}
 				</th>
-				<th class="sortable" onclick={() => handleSort('dataAsOf')}>
-					Data As Of {sortKey === 'dataAsOf' ? (sortAsc ? '▲' : '▼') : ''}
-				</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -111,7 +108,6 @@
 					<td class="numeric" class:positive={summary.pctChange > 0} class:negative={summary.pctChange < 0}>
 						{formatPercent(summary.pctChange)}
 					</td>
-					<td>{summary.dataAsOf}</td>
 				</tr>
 			{/each}
 		</tbody>

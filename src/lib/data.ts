@@ -51,11 +51,12 @@ function parseCSVLine(line: string): string[] {
 	return values;
 }
 
-export function calculateSummaries(data: MuniRecord[]): MuniSummary[] {
+export function calculateSummaries(data: MuniRecord[]): { summaries: MuniSummary[]; dataAsOf: string } {
 	const municipalities = [...new Set(data.map(d => d.municipality))];
 	const currentYear = new Date().getFullYear();
+	let latestDataAsOf = '';
 
-	return municipalities.map(muni => {
+	const allSummaries = municipalities.map(muni => {
 		const muniData = data
 			.filter(d => d.municipality === muni)
 			.sort((a, b) => a.scrape_week.localeCompare(b.scrape_week));
@@ -69,6 +70,11 @@ export function calculateSummaries(data: MuniRecord[]): MuniSummary[] {
 		const change = currentValue - startValue;
 		const pctChange = startValue > 0 ? (change / startValue) * 100 : 0;
 
+		// Track the latest data date
+		if (currentRecord?.value_as_of_date && currentRecord.value_as_of_date > latestDataAsOf) {
+			latestDataAsOf = currentRecord.value_as_of_date;
+		}
+
 		return {
 			municipality: muni,
 			startOfYearValue: startValue,
@@ -77,7 +83,14 @@ export function calculateSummaries(data: MuniRecord[]): MuniSummary[] {
 			pctChange,
 			dataAsOf: currentRecord?.value_as_of_date || ''
 		};
-	}).sort((a, b) => a.municipality.localeCompare(b.municipality));
+	});
+
+	// Get top 10 by absolute change (largest movers positive or negative)
+	const top10 = [...allSummaries]
+		.sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+		.slice(0, 10);
+
+	return { summaries: top10, dataAsOf: latestDataAsOf };
 }
 
 export function getChartData(data: MuniRecord[]): { weeks: string[]; series: Map<string, (number | null)[]> } {
