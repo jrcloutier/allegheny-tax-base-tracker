@@ -8,7 +8,6 @@
 	let data: MuniRecord[] = $state([]);
 	let summaries: MuniSummary[] = $state([]);
 	let dataAsOf: string = $state('');
-	let selectedMunis: string[] = $state([]);
 	let loading: boolean = $state(true);
 	let error: string | null = $state(null);
 
@@ -30,10 +29,6 @@
 			loading = false;
 		}
 	});
-
-	function handleMuniSelect(munis: string[]) {
-		selectedMunis = munis;
-	}
 </script>
 
 <svelte:head>
@@ -52,21 +47,14 @@
 		<div class="error">Error: {error}</div>
 	{:else}
 		<section class="chart-section">
-			<h2>Year-to-Date Percent Change</h2>
-			<p class="help-text">
-				{#if selectedMunis.length === 0}
-					Click rows in the table below to filter municipalities on the chart.
-				{:else}
-					Showing {selectedMunis.length} selected municipalities.
-				{/if}
-			</p>
-			<LineChart {data} {selectedMunis} />
+			<h2>County-Wide Year-to-Date Change</h2>
+			<LineChart {data} />
 		</section>
 
 		<section class="table-section">
-			<h2>Top 10 Municipalities by Change</h2>
-			<p class="help-text">Click a row to add/remove it from the chart. Click column headers to sort.</p>
-			<SummaryTable {summaries} onMuniSelect={handleMuniSelect} {selectedMunis} />
+			<h2>All Municipalities</h2>
+			<p class="help-text">Click column headers to sort.</p>
+			<SummaryTable {summaries} />
 		</section>
 	{/if}
 

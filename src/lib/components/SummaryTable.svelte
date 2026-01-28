@@ -3,15 +3,13 @@
 
 	interface Props {
 		summaries: MuniSummary[];
-		onMuniSelect: (munis: string[]) => void;
-		selectedMunis: string[];
 	}
 
-	let { summaries, onMuniSelect, selectedMunis }: Props = $props();
+	let { summaries }: Props = $props();
 
 	type SortKey = 'municipality' | 'startOfYearValue' | 'currentValue' | 'change' | 'pctChange';
-	let sortKey: SortKey = $state('change');
-	let sortAsc: boolean = $state(false);
+	let sortKey: SortKey = $state('municipality');
+	let sortAsc: boolean = $state(true);
 
 	function formatCurrency(value: number): string {
 		return new Intl.NumberFormat('en-US', {
@@ -41,18 +39,6 @@
 		}
 	}
 
-	function toggleSelection(muni: string) {
-		if (selectedMunis.includes(muni)) {
-			onMuniSelect(selectedMunis.filter(m => m !== muni));
-		} else {
-			onMuniSelect([...selectedMunis, muni]);
-		}
-	}
-
-	function clearSelection() {
-		onMuniSelect([]);
-	}
-
 	let sortedSummaries = $derived(
 		[...summaries].sort((a, b) => {
 			const aVal = a[sortKey];
@@ -66,13 +52,6 @@
 </script>
 
 <div class="table-container">
-	{#if selectedMunis.length > 0}
-		<div class="selection-info">
-			<span>{selectedMunis.length} municipalities selected</span>
-			<button onclick={clearSelection}>Clear selection</button>
-		</div>
-	{/if}
-
 	<table>
 		<thead>
 			<tr>
@@ -95,10 +74,7 @@
 		</thead>
 		<tbody>
 			{#each sortedSummaries as summary}
-				<tr
-					class:selected={selectedMunis.includes(summary.municipality)}
-					onclick={() => toggleSelection(summary.municipality)}
-				>
+				<tr>
 					<td>{summary.municipality}</td>
 					<td class="numeric">{formatCurrency(summary.startOfYearValue)}</td>
 					<td class="numeric">{formatCurrency(summary.currentValue)}</td>
@@ -117,29 +93,7 @@
 <style>
 	.table-container {
 		overflow-x: auto;
-		margin-top: 2rem;
-	}
-
-	.selection-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1rem;
-		padding: 0.5rem 1rem;
-		background: #f0f0f0;
-		border-radius: 4px;
-	}
-
-	.selection-info button {
-		padding: 0.25rem 0.75rem;
-		border: 1px solid #ccc;
-		background: white;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	.selection-info button:hover {
-		background: #eee;
+		margin-top: 1rem;
 	}
 
 	table {
@@ -177,15 +131,6 @@
 
 	tr:hover {
 		background: #f8f8f8;
-		cursor: pointer;
-	}
-
-	tr.selected {
-		background: #e3f2fd;
-	}
-
-	tr.selected:hover {
-		background: #bbdefb;
 	}
 
 	.positive {

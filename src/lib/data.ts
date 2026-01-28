@@ -85,34 +85,35 @@ export function calculateSummaries(data: MuniRecord[]): { summaries: MuniSummary
 		};
 	});
 
-	// Get top 10 by absolute change (largest movers positive or negative)
-	const top10 = [...allSummaries]
-		.sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-		.slice(0, 10);
+	// Return all municipalities sorted alphabetically
+	const sorted = allSummaries.sort((a, b) => a.municipality.localeCompare(b.municipality));
 
-	return { summaries: top10, dataAsOf: latestDataAsOf };
+	return { summaries: sorted, dataAsOf: latestDataAsOf };
 }
 
-export function getChartData(data: MuniRecord[]): { weeks: string[]; series: Map<string, (number | null)[]> } {
+export function getAggregateChartData(data: MuniRecord[]): { weeks: string[]; values: number[] } {
 	const weeks = [...new Set(data.map(d => d.scrape_week))].sort();
-	const municipalities = [...new Set(data.map(d => d.municipality))];
+	const currentYear = new Date().getFullYear();
 
-	const series = new Map<string, (number | null)[]>();
+	// Calculate total county value for start of year
+	const startOfYearData = data.filter(d => d.year === currentYear);
+	const startWeek = [...new Set(startOfYearData.map(d => d.scrape_week))].sort()[0];
 
-	municipalities.forEach(muni => {
-		const muniData = data.filter(d => d.municipality === muni);
-		const values = weeks.map(week => {
-			const record = muniData.find(d => d.scrape_week === week);
-			return record?.taxable_value_ytd_pct ?? null;
-		});
-		series.set(muni, values);
+	let startOfYearTotal = 0;
+	if (startWeek) {
+		startOfYearTotal = data
+			.filter(d => d.scrape_week === startWeek)
+			.reduce((sum, d) => sum + d.taxable_value, 0);
+	}
+
+	// Calculate YTD percent change for each week
+	const values = weeks.map(week => {
+		const weekData = data.filter(d => d.scrape_week === week);
+		const weekTotal = weekData.reduce((sum, d) => sum + d.taxable_value, 0);
+
+		if (startOfYearTotal === 0) return 0;
+		return ((weekTotal - startOfYearTotal) / startOfYearTotal) * 100;
 	});
 
-	return { weeks, series };
-}
-
-// Generate distinct colors for municipalities
-export function generateColor(index: number, total: number): string {
-	const hue = (index * 360 / total) % 360;
-	return `hsl(${hue}, 70%, 50%)`;
+	return { weeks, values };
 }
