@@ -126,7 +126,11 @@
 		background: #e8e8e8;
 	}
 
-	.numeric {
+	th.numeric {
+		text-align: right;
+	}
+
+	td.numeric {
 		text-align: right;
 		font-family: 'Noto Sans Mono', monospace;
 	}
