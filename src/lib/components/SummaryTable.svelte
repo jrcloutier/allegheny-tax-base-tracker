@@ -7,7 +7,7 @@
 
 	let { summaries }: Props = $props();
 
-	type SortKey = 'municipality' | 'startOfYearValue' | 'currentValue' | 'change' | 'pctChange';
+	type SortKey = 'municipality' | 'taxable.change' | 'exempt.change' | 'purta.change' | 'estimatedTaxImpact' | 'taxImpactPct';
 	let sortKey: SortKey = $state('municipality');
 	let sortAsc: boolean = $state(true);
 	let searchQuery: string = $state('');
@@ -21,14 +21,22 @@
 		}).format(value);
 	}
 
-	function formatPercent(value: number): string {
-		const sign = value >= 0 ? '+' : '';
-		return `${sign}${value.toFixed(4)}%`;
-	}
-
 	function formatChange(value: number): string {
 		const sign = value >= 0 ? '+' : '';
-		return `${sign}${formatCurrency(value)}`;
+		return sign + formatCurrency(value);
+	}
+
+	function formatTaxImpact(value: number | null): string {
+		if (value === null) return 'N/A';
+		const sign = value >= 0 ? '+' : '';
+		return sign + formatCurrency(value);
+	}
+
+	function formatTaxImpactPct(value: number | null): string {
+		if (value === null) return 'N/A';
+		if (value === 0) return '0.00%';
+		const iconClass = value > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+		return `<i class="fa-solid ${iconClass}"></i> ${Math.abs(value).toFixed(2)}%`;
 	}
 
 	function handleSort(key: SortKey) {
@@ -40,12 +48,25 @@
 		}
 	}
 
+	function getSortValue(summary: MuniSummary, key: SortKey): string | number | null {
+		if (key === 'municipality') return summary.municipality;
+		if (key === 'taxable.change') return summary.taxable.change;
+		if (key === 'exempt.change') return summary.exempt.change;
+		if (key === 'purta.change') return summary.purta.change;
+		if (key === 'estimatedTaxImpact') return summary.estimatedTaxImpact;
+		if (key === 'taxImpactPct') return summary.taxImpactPct;
+		return null;
+	}
+
 	let filteredAndSortedSummaries = $derived(
 		[...summaries]
 			.filter(s => s.municipality.toLowerCase().includes(searchQuery.toLowerCase()))
 			.sort((a, b) => {
-				const aVal = a[sortKey];
-				const bVal = b[sortKey];
+				const aVal = getSortValue(a, sortKey);
+				const bVal = getSortValue(b, sortKey);
+				if (aVal === null && bVal === null) return 0;
+				if (aVal === null) return sortAsc ? 1 : -1;
+				if (bVal === null) return sortAsc ? -1 : 1;
 				const compare = typeof aVal === 'string'
 					? aVal.localeCompare(bVal as string)
 					: (aVal as number) - (bVal as number);
@@ -55,54 +76,72 @@
 </script>
 
 <div class="table-wrapper">
-	<div class="search-box">
-		<input
-			type="text"
-			placeholder="Search municipalities..."
-			bind:value={searchQuery}
-		/>
-		{#if searchQuery}
-			<button class="clear-btn" onclick={() => searchQuery = ''}>Clear</button>
-		{/if}
+	<div class="table-header">
+		<h2>Explore Municipalities</h2>
+		<div class="search-box">
+			<input
+				type="text"
+				placeholder="Search municipalities..."
+				bind:value={searchQuery}
+			/>
+			{#if searchQuery}
+				<button class="clear-btn" onclick={() => searchQuery = ''}>Clear</button>
+			{/if}
+		</div>
 	</div>
 
 	<div class="table-container">
 		<table>
 			<thead>
-				<tr>
+				<tr class="header-top">
+					<th></th>
+					<th colspan="3" class="group-header"><span>Total Change in Value</span></th>
+					<th colspan="2" class="group-header"><span>Est. Tax Impact</span></th>
+				</tr>
+				<tr class="header-bottom">
 					<th class="sortable" onclick={() => handleSort('municipality')}>
 						Municipality {sortKey === 'municipality' ? (sortAsc ? '▲' : '▼') : ''}
 					</th>
-					<th class="sortable numeric" onclick={() => handleSort('startOfYearValue')}>
-						Start of Year Value {sortKey === 'startOfYearValue' ? (sortAsc ? '▲' : '▼') : ''}
+					<th class="sortable numeric col-fixed" onclick={() => handleSort('taxable.change')}>
+						Taxable {sortKey === 'taxable.change' ? (sortAsc ? '▲' : '▼') : ''}
 					</th>
-					<th class="sortable numeric" onclick={() => handleSort('currentValue')}>
-						Current Value {sortKey === 'currentValue' ? (sortAsc ? '▲' : '▼') : ''}
+					<th class="sortable numeric col-fixed" onclick={() => handleSort('exempt.change')}>
+						Exempt {sortKey === 'exempt.change' ? (sortAsc ? '▲' : '▼') : ''}
 					</th>
-					<th class="sortable numeric" onclick={() => handleSort('change')}>
-						Change {sortKey === 'change' ? (sortAsc ? '▲' : '▼') : ''}
+					<th class="sortable numeric col-fixed" onclick={() => handleSort('purta.change')}>
+						PURTA {sortKey === 'purta.change' ? (sortAsc ? '▲' : '▼') : ''}
 					</th>
-					<th class="sortable numeric" onclick={() => handleSort('pctChange')}>
-						% Change {sortKey === 'pctChange' ? (sortAsc ? '▲' : '▼') : ''}
+					<th class="sortable numeric col-fixed" onclick={() => handleSort('estimatedTaxImpact')}>
+						Total {sortKey === 'estimatedTaxImpact' ? (sortAsc ? '▲' : '▼') : ''}
+					</th>
+					<th class="sortable numeric col-fixed" onclick={() => handleSort('taxImpactPct')}>
+						% {sortKey === 'taxImpactPct' ? (sortAsc ? '▲' : '▼') : ''}
 					</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each filteredAndSortedSummaries as summary}
 					<tr>
-						<td>{summary.municipality}</td>
-						<td class="numeric">{formatCurrency(summary.startOfYearValue)}</td>
-						<td class="numeric">{formatCurrency(summary.currentValue)}</td>
-						<td class="numeric" class:positive={summary.change > 0} class:negative={summary.change < 0}>
-							{formatChange(summary.change)}
+						<td><a href="/municipality/{summary.muniCode}">{summary.municipality}</a></td>
+						<td class="numeric col-fixed" class:positive={summary.taxable.change > 0} class:negative={summary.taxable.change < 0}>
+							{formatChange(summary.taxable.change)}
 						</td>
-						<td class="numeric" class:positive={summary.pctChange > 0} class:negative={summary.pctChange < 0}>
-							{formatPercent(summary.pctChange)}
+						<td class="numeric col-fixed" class:positive={summary.exempt.change > 0} class:negative={summary.exempt.change < 0}>
+							{formatChange(summary.exempt.change)}
+						</td>
+						<td class="numeric col-fixed" class:positive={summary.purta.change > 0} class:negative={summary.purta.change < 0}>
+							{formatChange(summary.purta.change)}
+						</td>
+						<td class="numeric col-fixed" class:positive={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact > 0} class:negative={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact < 0}>
+							{formatTaxImpact(summary.estimatedTaxImpact)}
+						</td>
+						<td class="numeric col-fixed" class:positive={summary.taxImpactPct !== null && summary.taxImpactPct > 0} class:negative={summary.taxImpactPct !== null && summary.taxImpactPct < 0}>
+							{@html formatTaxImpactPct(summary.taxImpactPct)}
 						</td>
 					</tr>
 				{:else}
 					<tr>
-						<td colspan="5" class="no-results">No municipalities found</td>
+						<td colspan="6" class="no-results">No municipalities found</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -115,15 +154,26 @@
 		margin-top: 1rem;
 	}
 
-	.search-box {
+	.table-header {
 		display: flex;
-		gap: 0.5rem;
+		justify-content: space-between;
+		align-items: center;
 		margin-bottom: 1rem;
 	}
 
+	.table-header h2 {
+		margin: 0;
+		font-size: 1.25rem;
+		font-family: 'Noto Sans Display', sans-serif;
+	}
+
+	.search-box {
+		display: flex;
+		gap: 0.5rem;
+	}
+
 	.search-box input {
-		flex: 1;
-		max-width: 300px;
+		width: 250px;
 		padding: 0.5rem 0.75rem;
 		font-size: 0.9rem;
 		font-family: 'Noto Sans Display', sans-serif;
@@ -157,22 +207,62 @@
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.9rem;
+		font-size: 0.875rem;
 		font-family: 'Noto Sans Display', sans-serif;
 	}
 
 	th, td {
-		padding: 0.75rem 1rem;
+		padding: 0.5rem 0.75rem;
 		text-align: left;
-		border-bottom: 1px solid #ddd;
 	}
 
-	th {
-		background: #f5f5f5;
+	/* Header styling - clean, minimal */
+	thead th {
 		font-weight: 600;
-		position: sticky;
-		top: 0;
 		font-family: 'Noto Sans Display', sans-serif;
+		background: transparent;
+		vertical-align: bottom;
+	}
+
+	/* Top row - empty cells and group headers */
+	.header-top th {
+		border-bottom: none;
+		padding-bottom: 0.25rem;
+	}
+
+	/* Group headers - text with decorative lines on either side */
+	.group-header {
+		text-align: center;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #333;
+	}
+
+	.group-header span {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.group-header span::before,
+	.group-header span::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: #ccc;
+	}
+
+	/* Bottom header row - column labels */
+	.header-bottom th {
+		font-size: 0.8rem;
+		color: #333;
+		border-bottom: 2px solid #333;
+		padding-top: 0.25rem;
+	}
+
+	/* Fixed width columns for numeric data columns */
+	.col-fixed {
+		width: 150px;
 	}
 
 	th.sortable {
@@ -181,11 +271,16 @@
 	}
 
 	th.sortable:hover {
-		background: #e8e8e8;
+		color: #1976d2;
 	}
 
 	th.numeric {
 		text-align: right;
+	}
+
+	/* Body styling */
+	td {
+		border-bottom: 1px solid #eee;
 	}
 
 	td.numeric {
@@ -193,8 +288,12 @@
 		font-family: 'Noto Sans Mono', monospace;
 	}
 
-	tr:hover {
-		background: #f8f8f8;
+	td .fa-solid {
+		font-size: 0.6em;
+	}
+
+	tbody tr:hover {
+		background: #f8f9fa;
 	}
 
 	.positive {
@@ -209,5 +308,14 @@
 		text-align: center;
 		color: #666;
 		font-style: italic;
+	}
+
+	td a {
+		color: #1976d2;
+		text-decoration: none;
+	}
+
+	td a:hover {
+		text-decoration: underline;
 	}
 </style>

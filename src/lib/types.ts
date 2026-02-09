@@ -2,6 +2,8 @@ export interface MuniRecord {
 	municipality: string;
 	muni_code: string;
 	taxable_value: number;
+	exempt_value: number;
+	purta_value: number;
 	value_as_of_date: string;
 	scraped_at: string;
 	scrape_week: string;
@@ -12,13 +14,30 @@ export interface MuniRecord {
 	taxable_value_ytd_pct: number | null;
 }
 
-export interface MuniSummary {
-	municipality: string;
-	startOfYearValue: number;
-	currentValue: number;
+export interface ValueCategory {
+	startOfYear: number;
+	current: number;
 	change: number;
 	pctChange: number;
+}
+
+export interface MuniSummary {
+	municipality: string;
+	muniCode: string;
 	dataAsOf: string;
+	taxable: ValueCategory;
+	exempt: ValueCategory;
+	purta: ValueCategory;
+	millage: number | null;
+	estimatedTaxImpact: number | null;
+	taxImpactPct: number | null;
+}
+
+export interface MillageRecord {
+	municipality: string;
+	muni_code: string;
+	tax_year: number;
+	millage: number;
 }
 
 export interface ChartDataset {
