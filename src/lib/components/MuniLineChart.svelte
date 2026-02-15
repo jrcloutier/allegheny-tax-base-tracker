@@ -49,7 +49,7 @@
 					data: values,
 					borderColor: lineColor,
 					backgroundColor: fillColor,
-					tension: 0.1,
+					tension: 0,
 					pointRadius: 4,
 					borderWidth: 2,
 					fill: true

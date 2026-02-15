@@ -70,7 +70,7 @@
 					data: values,
 					borderColor: lineColor,
 					backgroundColor: fillColor,
-					tension: 0.1,
+					tension: 0,
 					pointRadius: 3,
 					borderWidth: 2,
 					fill: true
