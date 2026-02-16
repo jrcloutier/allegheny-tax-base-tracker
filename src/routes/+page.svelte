@@ -56,28 +56,37 @@
 			startOfYear: summaries.reduce((sum, s) => sum + s.taxable.startOfYear, 0),
 			current: summaries.reduce((sum, s) => sum + s.taxable.current, 0),
 			change: 0,
-			pctChange: 0
+			pctChange: 0,
+			weeklyChange: summaries.reduce((sum, s) => sum + s.taxable.weeklyChange, 0),
+			weeklyPctChange: 0
 		};
 		taxable.change = taxable.current - taxable.startOfYear;
 		taxable.pctChange = taxable.startOfYear > 0 ? (taxable.change / taxable.startOfYear) * 100 : 0;
+		taxable.weeklyPctChange = taxable.startOfYear > 0 ? (taxable.weeklyChange / taxable.startOfYear) * 100 : 0;
 
 		const exempt: ValueCategory = {
 			startOfYear: summaries.reduce((sum, s) => sum + s.exempt.startOfYear, 0),
 			current: summaries.reduce((sum, s) => sum + s.exempt.current, 0),
 			change: 0,
-			pctChange: 0
+			pctChange: 0,
+			weeklyChange: summaries.reduce((sum, s) => sum + s.exempt.weeklyChange, 0),
+			weeklyPctChange: 0
 		};
 		exempt.change = exempt.current - exempt.startOfYear;
 		exempt.pctChange = exempt.startOfYear > 0 ? (exempt.change / exempt.startOfYear) * 100 : 0;
+		exempt.weeklyPctChange = exempt.startOfYear > 0 ? (exempt.weeklyChange / exempt.startOfYear) * 100 : 0;
 
 		const purta: ValueCategory = {
 			startOfYear: summaries.reduce((sum, s) => sum + s.purta.startOfYear, 0),
 			current: summaries.reduce((sum, s) => sum + s.purta.current, 0),
 			change: 0,
-			pctChange: 0
+			pctChange: 0,
+			weeklyChange: summaries.reduce((sum, s) => sum + s.purta.weeklyChange, 0),
+			weeklyPctChange: 0
 		};
 		purta.change = purta.current - purta.startOfYear;
 		purta.pctChange = purta.startOfYear > 0 ? (purta.change / purta.startOfYear) * 100 : 0;
+		purta.weeklyPctChange = purta.startOfYear > 0 ? (purta.weeklyChange / purta.startOfYear) * 100 : 0;
 
 		// Sum up tax impacts for municipalities that have millage data
 		const taxImpact = summaries.reduce((sum, s) => sum + (s.estimatedTaxImpact ?? 0), 0);
@@ -137,7 +146,7 @@
 
 			<div class="summary-boxes">
 				<div class="summary-box">
-					<h4 class="box-title">Taxable Value</h4>
+					<h4 class="box-title">Taxable Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Total real estate value subject to property taxes.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(countyTotals().taxable.startOfYear)}</span>
@@ -161,7 +170,7 @@
 				</div>
 
 				<div class="summary-box">
-					<h4 class="box-title">Tax Exempt Value</h4>
+					<h4 class="box-title">Tax Exempt Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Total real estate value exempt from property taxes, such as government buildings, churches, and nonprofits.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(countyTotals().exempt.startOfYear)}</span>
@@ -185,7 +194,7 @@
 				</div>
 
 				<div class="summary-box">
-					<h4 class="box-title">PURTA Value</h4>
+					<h4 class="box-title">PURTA Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Value of public utility realty taxed under a separate state formula (Public Utility Realty Tax Act).</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(countyTotals().purta.startOfYear)}</span>
@@ -209,7 +218,7 @@
 				</div>
 
 				<div class="summary-box" class:box-positive={countyTotals().taxImpact > 0} class:box-negative={countyTotals().taxImpact < 0}>
-					<h4 class="box-title">Tax Impact</h4>
+					<h4 class="box-title">Tax Impact <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Estimated change in tax revenue based on each municipality's change in taxable value multiplied by its millage rate.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Est. Impact</span>
 						<span class="value" class:positive={countyTotals().taxImpact > 0} class:negative={countyTotals().taxImpact < 0}>
@@ -436,6 +445,55 @@
 		color: #333;
 		padding-bottom: 0.5rem;
 		border-bottom: 1px solid #e0e0e0;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.info-btn {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		cursor: help;
+		color: #999;
+		font-size: 0.8rem;
+	}
+
+	.info-btn:hover {
+		color: #666;
+	}
+
+	.info-tooltip {
+		display: none;
+		position: absolute;
+		bottom: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		background: #333;
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 400;
+		line-height: 1.4;
+		padding: 0.5rem 0.75rem;
+		border-radius: 6px;
+		width: 200px;
+		text-align: left;
+		z-index: 10;
+		pointer-events: none;
+	}
+
+	.info-tooltip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 5px solid transparent;
+		border-top-color: #333;
+	}
+
+	.info-btn:hover .info-tooltip {
+		display: block;
 	}
 
 	.box-row {

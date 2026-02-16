@@ -3,6 +3,7 @@
 	import { Chart, registerables } from 'chart.js';
 	import type { MuniRecord } from '$lib/types';
 	import { getMuniChartData } from '$lib/data';
+	import { externalTooltipHandler } from '$lib/tooltip';
 
 	Chart.register(...registerables);
 
@@ -15,16 +16,6 @@
 	let { data, muniCode, muniName }: Props = $props();
 	let canvas: HTMLCanvasElement;
 	let chart: Chart | null = null;
-
-	function formatCurrency(value: number): string {
-		const sign = value >= 0 ? '+' : '';
-		return sign + new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'USD',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0
-		}).format(value);
-	}
 
 	function createChart() {
 		if (!canvas || !data.length) return;
@@ -67,15 +58,8 @@
 						display: false
 					},
 					tooltip: {
-						titleFont: {
-							family: "'Noto Sans Display', sans-serif"
-						},
-						bodyFont: {
-							family: "'Noto Sans Mono', monospace"
-						},
-						callbacks: {
-							label: (ctx) => `Change: ${formatCurrency(ctx.parsed.y)}`
-						}
+						enabled: false,
+						external: externalTooltipHandler
 					},
 					title: {
 						display: true,

@@ -111,7 +111,7 @@
 
 			<div class="summary-boxes">
 				<div class="summary-box">
-					<h4 class="box-title">Taxable Value</h4>
+					<h4 class="box-title">Taxable Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Total real estate value subject to property taxes.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(summary.taxable.startOfYear)}</span>
@@ -135,7 +135,7 @@
 				</div>
 
 				<div class="summary-box">
-					<h4 class="box-title">Tax Exempt Value</h4>
+					<h4 class="box-title">Tax Exempt Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Total real estate value exempt from property taxes, such as government buildings, churches, and nonprofits.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(summary.exempt.startOfYear)}</span>
@@ -159,7 +159,7 @@
 				</div>
 
 				<div class="summary-box">
-					<h4 class="box-title">PURTA Value</h4>
+					<h4 class="box-title">PURTA Value <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Value of public utility realty taxed under a separate state formula (Public Utility Realty Tax Act).</span></span></h4>
 					<div class="box-row">
 						<span class="label">Start of Year</span>
 						<span class="value">{formatCurrency(summary.purta.startOfYear)}</span>
@@ -183,7 +183,7 @@
 				</div>
 
 				<div class="summary-box" class:box-positive={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact > 0} class:box-negative={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact < 0}>
-					<h4 class="box-title">Tax Impact</h4>
+					<h4 class="box-title">Tax Impact <span class="info-btn"><i class="fa-solid fa-circle-info"></i><span class="info-tooltip">Estimated change in tax revenue based on the change in taxable value multiplied by the municipality's millage rate.</span></span></h4>
 					<div class="box-row">
 						<span class="label">Est. Impact</span>
 						<span class="value" class:positive={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact > 0} class:negative={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact < 0}>
@@ -325,6 +325,55 @@
 		color: #333;
 		padding-bottom: 0.5rem;
 		border-bottom: 1px solid #e0e0e0;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.info-btn {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		cursor: help;
+		color: #999;
+		font-size: 0.8rem;
+	}
+
+	.info-btn:hover {
+		color: #666;
+	}
+
+	.info-tooltip {
+		display: none;
+		position: absolute;
+		bottom: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		background: #333;
+		color: #fff;
+		font-size: 0.75rem;
+		font-weight: 400;
+		line-height: 1.4;
+		padding: 0.5rem 0.75rem;
+		border-radius: 6px;
+		width: 200px;
+		text-align: left;
+		z-index: 10;
+		pointer-events: none;
+	}
+
+	.info-tooltip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 5px solid transparent;
+		border-top-color: #333;
+	}
+
+	.info-btn:hover .info-tooltip {
+		display: block;
 	}
 
 	.box-row {

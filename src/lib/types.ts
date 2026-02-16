@@ -19,6 +19,8 @@ export interface ValueCategory {
 	current: number;
 	change: number;
 	pctChange: number;
+	weeklyChange: number;
+	weeklyPctChange: number;
 }
 
 export interface MuniSummary {
@@ -31,6 +33,8 @@ export interface MuniSummary {
 	millage: number | null;
 	estimatedTaxImpact: number | null;
 	taxImpactPct: number | null;
+	weeklyTaxImpact: number | null;
+	weeklyTaxImpactPct: number | null;
 }
 
 export interface MillageRecord {

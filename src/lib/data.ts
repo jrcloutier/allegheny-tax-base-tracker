@@ -76,13 +76,17 @@ function parseCSVLine(line: string): string[] {
 function calculateValueCategory(
 	startRecord: MuniRecord | undefined,
 	currentRecord: MuniRecord | undefined,
+	previousRecord: MuniRecord | undefined,
 	field: 'taxable_value' | 'exempt_value' | 'purta_value'
-): { startOfYear: number; current: number; change: number; pctChange: number } {
+): { startOfYear: number; current: number; change: number; pctChange: number; weeklyChange: number; weeklyPctChange: number } {
 	const startValue = startRecord?.[field] || 0;
 	const currentValue = currentRecord?.[field] || 0;
+	const previousValue = previousRecord?.[field] || currentValue;
 	const change = currentValue - startValue;
 	const pctChange = startValue > 0 ? (change / startValue) * 100 : 0;
-	return { startOfYear: startValue, current: currentValue, change, pctChange };
+	const weeklyChange = currentValue - previousValue;
+	const weeklyPctChange = previousValue > 0 ? (weeklyChange / previousValue) * 100 : 0;
+	return { startOfYear: startValue, current: currentValue, change, pctChange, weeklyChange, weeklyPctChange };
 }
 
 export function calculateSummaries(
@@ -112,11 +116,12 @@ export function calculateSummaries(
 		const yearData = muniData.filter(d => d.year === currentYear);
 		const startRecord = yearData[0] || muniData[0];
 		const currentRecord = muniData[muniData.length - 1];
+		const previousRecord = muniData.length >= 2 ? muniData[muniData.length - 2] : undefined;
 
 		// Calculate all three value categories
-		const taxable = calculateValueCategory(startRecord, currentRecord, 'taxable_value');
-		const exempt = calculateValueCategory(startRecord, currentRecord, 'exempt_value');
-		const purta = calculateValueCategory(startRecord, currentRecord, 'purta_value');
+		const taxable = calculateValueCategory(startRecord, currentRecord, previousRecord, 'taxable_value');
+		const exempt = calculateValueCategory(startRecord, currentRecord, previousRecord, 'exempt_value');
+		const purta = calculateValueCategory(startRecord, currentRecord, previousRecord, 'purta_value');
 
 		// Track the latest data date
 		if (currentRecord?.value_as_of_date && currentRecord.value_as_of_date > latestDataAsOf) {
@@ -137,6 +142,12 @@ export function calculateSummaries(
 			? (estimatedTaxImpact / startOfYearTax) * 100
 			: null;
 
+		// Calculate weekly tax impact
+		const weeklyTaxImpact = millage !== null ? taxable.weeklyChange * (millage / 1000) : null;
+		const weeklyTaxImpactPct = startOfYearTax !== null && startOfYearTax > 0 && weeklyTaxImpact !== null
+			? (weeklyTaxImpact / startOfYearTax) * 100
+			: null;
+
 		return {
 			municipality: muni,
 			muniCode: currentRecord?.muni_code || '',
@@ -146,7 +157,9 @@ export function calculateSummaries(
 			purta,
 			millage,
 			estimatedTaxImpact,
-			taxImpactPct
+			taxImpactPct,
+			weeklyTaxImpact,
+			weeklyTaxImpactPct
 		};
 	});
 
@@ -288,11 +301,12 @@ export function getMuniSummary(
 	const yearData = muniData.filter(d => d.year === currentYear);
 	const startRecord = yearData[0] || muniData[0];
 	const currentRecord = muniData[muniData.length - 1];
+	const previousRecord = muniData.length >= 2 ? muniData[muniData.length - 2] : undefined;
 
 	// Calculate all three value categories
-	const taxable = calculateValueCategory(startRecord, currentRecord, 'taxable_value');
-	const exempt = calculateValueCategory(startRecord, currentRecord, 'exempt_value');
-	const purta = calculateValueCategory(startRecord, currentRecord, 'purta_value');
+	const taxable = calculateValueCategory(startRecord, currentRecord, previousRecord, 'taxable_value');
+	const exempt = calculateValueCategory(startRecord, currentRecord, previousRecord, 'exempt_value');
+	const purta = calculateValueCategory(startRecord, currentRecord, previousRecord, 'purta_value');
 
 	// Get millage rate
 	const latestMillageYear = Math.max(...millageRates.map(m => m.tax_year));
@@ -308,6 +322,12 @@ export function getMuniSummary(
 		? (estimatedTaxImpact / startOfYearTax) * 100
 		: null;
 
+	// Calculate weekly tax impact
+	const weeklyTaxImpact = millage !== null ? taxable.weeklyChange * (millage / 1000) : null;
+	const weeklyTaxImpactPct = startOfYearTax !== null && startOfYearTax > 0 && weeklyTaxImpact !== null
+		? (weeklyTaxImpact / startOfYearTax) * 100
+		: null;
+
 	return {
 		municipality: currentRecord?.municipality || startRecord?.municipality || '',
 		muniCode,
@@ -317,6 +337,8 @@ export function getMuniSummary(
 		purta,
 		millage,
 		estimatedTaxImpact,
-		taxImpactPct
+		taxImpactPct,
+		weeklyTaxImpact,
+		weeklyTaxImpactPct
 	};
 }

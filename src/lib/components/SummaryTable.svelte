@@ -7,7 +7,9 @@
 
 	let { summaries }: Props = $props();
 
+	type ViewMode = 'ytd' | 'weekly';
 	type SortKey = 'municipality' | 'taxable.change' | 'exempt.change' | 'purta.change' | 'estimatedTaxImpact' | 'taxImpactPct';
+	let viewMode: ViewMode = $state('ytd');
 	let sortKey: SortKey = $state('municipality');
 	let sortAsc: boolean = $state(true);
 	let searchQuery: string = $state('');
@@ -39,6 +41,18 @@
 		return `<i class="fa-solid ${iconClass}"></i> ${Math.abs(value).toFixed(2)}%`;
 	}
 
+	function getChangeValue(summary: MuniSummary, field: 'taxable' | 'exempt' | 'purta'): number {
+		return viewMode === 'ytd' ? summary[field].change : summary[field].weeklyChange;
+	}
+
+	function getTaxImpactValue(summary: MuniSummary): number | null {
+		return viewMode === 'ytd' ? summary.estimatedTaxImpact : summary.weeklyTaxImpact;
+	}
+
+	function getTaxImpactPctValue(summary: MuniSummary): number | null {
+		return viewMode === 'ytd' ? summary.taxImpactPct : summary.weeklyTaxImpactPct;
+	}
+
 	function handleSort(key: SortKey) {
 		if (sortKey === key) {
 			sortAsc = !sortAsc;
@@ -50,11 +64,11 @@
 
 	function getSortValue(summary: MuniSummary, key: SortKey): string | number | null {
 		if (key === 'municipality') return summary.municipality;
-		if (key === 'taxable.change') return summary.taxable.change;
-		if (key === 'exempt.change') return summary.exempt.change;
-		if (key === 'purta.change') return summary.purta.change;
-		if (key === 'estimatedTaxImpact') return summary.estimatedTaxImpact;
-		if (key === 'taxImpactPct') return summary.taxImpactPct;
+		if (key === 'taxable.change') return getChangeValue(summary, 'taxable');
+		if (key === 'exempt.change') return getChangeValue(summary, 'exempt');
+		if (key === 'purta.change') return getChangeValue(summary, 'purta');
+		if (key === 'estimatedTaxImpact') return getTaxImpactValue(summary);
+		if (key === 'taxImpactPct') return getTaxImpactPctValue(summary);
 		return null;
 	}
 
@@ -78,15 +92,21 @@
 <div class="table-wrapper">
 	<div class="table-header">
 		<h2>Explore Municipalities</h2>
-		<div class="search-box">
-			<input
-				type="text"
-				placeholder="Search municipalities..."
-				bind:value={searchQuery}
-			/>
-			{#if searchQuery}
-				<button class="clear-btn" onclick={() => searchQuery = ''}>Clear</button>
-			{/if}
+		<div class="table-controls">
+			<div class="toggle-group">
+				<button class="toggle-btn" class:active={viewMode === 'ytd'} onclick={() => viewMode = 'ytd'}>YTD</button>
+				<button class="toggle-btn" class:active={viewMode === 'weekly'} onclick={() => viewMode = 'weekly'}>Weekly</button>
+			</div>
+			<div class="search-box">
+				<input
+					type="text"
+					placeholder="Search municipalities..."
+					bind:value={searchQuery}
+				/>
+				{#if searchQuery}
+					<button class="clear-btn" onclick={() => searchQuery = ''}>Clear</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 
@@ -95,7 +115,7 @@
 			<thead>
 				<tr class="header-top">
 					<th></th>
-					<th colspan="3" class="group-header"><span>Total Change in Value</span></th>
+					<th colspan="3" class="group-header"><span>{viewMode === 'ytd' ? 'YTD' : 'Weekly'} Change in Value</span></th>
 					<th colspan="2" class="group-header"><span>Est. Tax Impact</span></th>
 				</tr>
 				<tr class="header-bottom">
@@ -121,22 +141,27 @@
 			</thead>
 			<tbody>
 				{#each filteredAndSortedSummaries as summary}
+					{@const taxableVal = getChangeValue(summary, 'taxable')}
+					{@const exemptVal = getChangeValue(summary, 'exempt')}
+					{@const purtaVal = getChangeValue(summary, 'purta')}
+					{@const taxImpactVal = getTaxImpactValue(summary)}
+					{@const taxImpactPctVal = getTaxImpactPctValue(summary)}
 					<tr>
 						<td><a href="/municipality/{summary.muniCode}">{summary.municipality}</a></td>
-						<td class="numeric col-fixed" class:positive={summary.taxable.change > 0} class:negative={summary.taxable.change < 0}>
-							{formatChange(summary.taxable.change)}
+						<td class="numeric col-fixed" class:positive={taxableVal > 0} class:negative={taxableVal < 0}>
+							{formatChange(taxableVal)}
 						</td>
-						<td class="numeric col-fixed" class:positive={summary.exempt.change > 0} class:negative={summary.exempt.change < 0}>
-							{formatChange(summary.exempt.change)}
+						<td class="numeric col-fixed" class:positive={exemptVal > 0} class:negative={exemptVal < 0}>
+							{formatChange(exemptVal)}
 						</td>
-						<td class="numeric col-fixed" class:positive={summary.purta.change > 0} class:negative={summary.purta.change < 0}>
-							{formatChange(summary.purta.change)}
+						<td class="numeric col-fixed" class:positive={purtaVal > 0} class:negative={purtaVal < 0}>
+							{formatChange(purtaVal)}
 						</td>
-						<td class="numeric col-fixed" class:positive={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact > 0} class:negative={summary.estimatedTaxImpact !== null && summary.estimatedTaxImpact < 0}>
-							{formatTaxImpact(summary.estimatedTaxImpact)}
+						<td class="numeric col-fixed" class:positive={taxImpactVal !== null && taxImpactVal > 0} class:negative={taxImpactVal !== null && taxImpactVal < 0}>
+							{formatTaxImpact(taxImpactVal)}
 						</td>
-						<td class="numeric col-fixed" class:positive={summary.taxImpactPct !== null && summary.taxImpactPct > 0} class:negative={summary.taxImpactPct !== null && summary.taxImpactPct < 0}>
-							{@html formatTaxImpactPct(summary.taxImpactPct)}
+						<td class="numeric col-fixed" class:positive={taxImpactPctVal !== null && taxImpactPctVal > 0} class:negative={taxImpactPctVal !== null && taxImpactPctVal < 0}>
+							{@html formatTaxImpactPct(taxImpactPctVal)}
 						</td>
 					</tr>
 				{:else}
@@ -165,6 +190,44 @@
 		margin: 0;
 		font-size: 1.25rem;
 		font-family: 'Noto Sans Display', sans-serif;
+	}
+
+	.table-controls {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+	}
+
+	.toggle-group {
+		display: flex;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	.toggle-btn {
+		padding: 0.5rem 0.85rem;
+		font-size: 0.85rem;
+		font-family: 'Noto Sans Display', sans-serif;
+		font-weight: 500;
+		border: none;
+		background: #f5f5f5;
+		color: #666;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.toggle-btn:not(:last-child) {
+		border-right: 1px solid #ddd;
+	}
+
+	.toggle-btn.active {
+		background: #333;
+		color: #fff;
+	}
+
+	.toggle-btn:not(.active):hover {
+		background: #e8e8e8;
 	}
 
 	.search-box {

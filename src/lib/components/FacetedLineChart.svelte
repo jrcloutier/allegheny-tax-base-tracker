@@ -3,6 +3,7 @@
 	import { Chart, registerables } from 'chart.js';
 	import type { MuniRecord } from '$lib/types';
 	import { getAggregateFacetedChartData, type ValueType } from '$lib/data';
+	import { externalTooltipHandler } from '$lib/tooltip';
 
 	Chart.register(...registerables);
 
@@ -15,16 +16,6 @@
 	let exemptCanvas: HTMLCanvasElement;
 	let purtaCanvas: HTMLCanvasElement;
 	let charts: Chart[] = [];
-
-	function formatCurrency(value: number): string {
-		const sign = value >= 0 ? '+' : '';
-		return sign + new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'USD',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0
-		}).format(value);
-	}
 
 	function formatWeekLabel(week: string): string {
 		const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
@@ -86,26 +77,8 @@
 						display: false
 					},
 					tooltip: {
-						backgroundColor: '#fff',
-						borderColor: '#ccc',
-						borderWidth: 1,
-						titleColor: '#333',
-						titleFont: {
-							family: "'Noto Sans Display', sans-serif"
-						},
-						bodyFont: {
-							family: "'Noto Sans Mono', monospace"
-						},
-						displayColors: false,
-						callbacks: {
-							label: (ctx) => formatCurrency(ctx.parsed.y),
-							labelTextColor: (ctx) => {
-								const value = ctx.parsed.y;
-								if (value > 0) return '#2e7d32';
-								if (value < 0) return '#c62828';
-								return '#333';
-							}
-						}
+						enabled: false,
+						external: externalTooltipHandler
 					},
 					title: {
 						display: true,
