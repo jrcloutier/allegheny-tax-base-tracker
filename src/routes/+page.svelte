@@ -270,6 +270,9 @@
 			</div>
 		</div>
 	</div>
+	<footer>
+		<p>Made by <a href="https://jrcloutier.com" target="_blank" rel="noopener">Jimmy Cloutier</a> with help from <a href="https://claude.ai" target="_blank" rel="noopener">Claude.ai</a></p>
+	</footer>
 </section>
 
 <style>
@@ -332,8 +335,29 @@
 	.about-section {
 		background: #f8f9fa;
 		border-top: 1px solid #e0e0e0;
-		padding: 2rem 0 5rem;
+		padding: 2rem 0 0;
 		margin-bottom: 0;
+	}
+
+	footer {
+		text-align: center;
+		padding: 2rem 1rem;
+		font-family: 'Noto Sans Display', sans-serif;
+		font-size: 0.8rem;
+		color: #888;
+	}
+
+	footer p {
+		margin: 0;
+	}
+
+	footer a {
+		color: #888;
+		text-decoration: underline;
+	}
+
+	footer a:hover {
+		color: #555;
 	}
 
 	.about-inner {
