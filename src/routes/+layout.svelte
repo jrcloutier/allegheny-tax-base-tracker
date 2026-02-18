@@ -17,11 +17,13 @@
 <style>
 	footer {
 		text-align: center;
-		padding: 1.5rem 1rem;
+		padding: 0 1rem 1.5rem;
+		margin-top: -3.5rem;
 		font-family: 'Noto Sans Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		font-size: 0.8rem;
 		color: #888;
 		background: transparent;
+		position: relative;
 	}
 
 	footer p {
