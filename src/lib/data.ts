@@ -1,7 +1,7 @@
 import type { MuniRecord, MuniSummary, MillageRecord } from './types';
 
-const DATA_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/muni-real-estate-time-series.csv';
-const MILLAGE_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/muni-millage-rates.csv';
+const DATA_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/tax-base.csv';
+const MILLAGE_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/millage-muni.csv';
 
 export async function fetchData(): Promise<MuniRecord[]> {
 	const response = await fetch(DATA_URL);
