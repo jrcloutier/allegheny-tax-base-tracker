@@ -1,6 +1,6 @@
 import type { EntryGenerator } from './$types';
 
-const DATA_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/muni-real-estate-time-series.csv';
+const DATA_URL = 'https://raw.githubusercontent.com/PittsburghPG/scraper-allegheny-county-muni-profiles/main/data/tax-base.csv';
 
 export const entries: EntryGenerator = async () => {
 	const response = await fetch(DATA_URL);
